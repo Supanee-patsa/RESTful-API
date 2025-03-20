@@ -5,45 +5,55 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 console.log(`Server is running on port ${PORT}`);
 });
-let books = [
+
+let users = [
   {
- id: 1,
- title: '1984',
- author: 'George Orwell',
+    id: 1,
+    name: 'John Doe',
+    email: 'john@example.com',
   },
   {
- id: 2,
- title: 'The Hobit',
- author: 'J.R.R. Tolkien',
+    id: 2,
+    name: 'Jane Doe',
+    email: 'jane@example.com',
   },
- ];
- app.get('/books', (req, res) => {
-  res.json(books);
- });
+];
 
- app.post('/books', (req, res) => {
-  const newBook = {
- id: books.length + 1,
- title: req.body.title,
- author: req.body.author,
-  };
- books.push(newBook);
- res.json({ message: 'Book added successfully!', book: newBook });
- });
+// Get all users
+app.get('/users', (req, res) => {
+  res.json(users);
+});
 
- app.put('/books/:id', (req, res) => {
-  const bookId = parseInt(req.params.id);
- const book = books.find((b) => b.id === bookId);
- if (!book) {
- return res.status(404).json({ message: 'Book not found!' });
+// Add a new user
+app.post('/users', (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ message: 'Name and email are required!' });
   }
- book.title = req.body.title || book.title;
- book.author = req.body.author || book.author;
- res.json({ message: 'Book updated successfully!', book });
- });
+  const newUser = {
+    id: users.length + 1,
+    name,
+    email,
+  };
+  users.push(newUser);
+  res.json({ message: 'User added successfully!', user: newUser });
+});
 
- app.delete('/books/:id', (req, res) => {
-  const bookId = parseInt(req.params.id);
- books = books.filter((b) => b.id !== bookId);
- res.json({ message: 'Book deleted successfully!' });
- });
+// Update a user
+app.put('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found!' });
+  }
+  user.name = req.body.name || user.name;
+  user.email = req.body.email || user.email;
+  res.json({ message: 'User updated successfully!', user });
+});
+
+// Delete a user
+app.delete('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+  users = users.filter((u) => u.id !== userId);
+  res.json({ message: 'User deleted successfully!' });
+});
