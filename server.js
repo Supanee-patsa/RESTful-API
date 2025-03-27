@@ -1,10 +1,26 @@
 import express from 'express';
- const app = express();
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
+const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-console.log(`Server is running on port ${PORT}`);
-});
+/**
+ * Swagger configuration
+ */
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'User API',
+      version: '1.0.0',
+      description: 'A simple Express API for managing users',
+    },
+  },
+  apis: ['server.js'],
+};
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 let users = [
   {
@@ -19,12 +35,40 @@ let users = [
   },
 ];
 
-// Get all users
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     responses:
+ *       200:
+ *         description: A list of users
+ */
 app.get('/users', (req, res) => {
   res.json(users);
 });
 
-// Add a new user
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Add a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User added successfully
+ */
+
 app.post('/users', (req, res) => {
   const { name, email } = req.body;
   if (!name || !email) {
@@ -39,7 +83,33 @@ app.post('/users', (req, res) => {
   res.json({ message: 'User added successfully!', user: newUser });
 });
 
-// Update a user
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ */
+
 app.put('/users/:id', (req, res) => {
   const userId = parseInt(req.params.id);
   const user = users.find((u) => u.id === userId);
@@ -51,9 +121,28 @@ app.put('/users/:id', (req, res) => {
   res.json({ message: 'User updated successfully!', user });
 });
 
-// Delete a user
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ */
+
 app.delete('/users/:id', (req, res) => {
   const userId = parseInt(req.params.id);
   users = users.filter((u) => u.id !== userId);
   res.json({ message: 'User deleted successfully!' });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
